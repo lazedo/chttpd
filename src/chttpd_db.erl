@@ -1020,7 +1020,8 @@ db_attachment_req(#httpd{method=Method, user_ctx=Ctx}=Req, Db, DocId, FileNamePa
         revs = {Pos, case Revs of [] -> []; [Hd|_] -> [Hd] end},
         atts = NewAtt ++ [A || A <- Atts, A#att.name /= FileName]
     },
-    case fabric:update_doc(Db, DocEdited, [{user_ctx,Ctx}]) of
+    W = chttpd:qs_value(Req, "w", integer_to_list(mem3:quorum(Db))),
+    case fabric:update_doc(Db, DocEdited, [{user_ctx,Ctx}, {w, W}]) of
     {ok, UpdatedRev} ->
         HttpCode = 201;
     {accepted, UpdatedRev} ->
